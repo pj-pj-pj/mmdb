@@ -55,25 +55,26 @@ export default function App() {
 
   return (
     <>
-      <Nav movies={movies} />
-      <Main movies={movies} />
+      <Nav>
+        <Search />
+        <SearchResults movies={movies} />
+      </Nav>
+      <Main>
+        <ListBox movies={movies} />
+        <WatchedBox />
+      </Main>
     </>
   );
 }
 
-function Nav({ movies }) {
-  return (
-    <nav className='nav-bar'>
-      <Logo />
-      <Search />
-      <SearchResults movies={movies} />
-    </nav>
-  );
+function Nav({ children }) {
+  return <nav className='nav-bar'>{children}</nav>;
 }
 
 function Logo() {
   return (
     <div className='logo'>
+      <Logo />
       <span role='img'>🍿</span>
       <h1>usePopcorn</h1>
     </div>
@@ -101,47 +102,57 @@ function SearchResults({ movies }) {
   );
 }
 
-function Main({ movies }) {
-  const [isOpen2, setIsOpen2] = useState(true);
-  const [watched, setWatched] = useState(tempWatchedData);
+function Main({ children }) {
+  return <main className='main'>{children}</main>;
+}
 
+function ListBox({ movies }) {
   return (
-    <main className='main'>
-      <Box>
+    <Box>
+      <ul className='list'>
+        {movies?.map((movie) => (
+          <Movie
+            movie={movie}
+            key={movie.imdbID}
+          >
+            <span>🗓</span>
+            <span>{movie.Year}</span>
+          </Movie>
+        ))}
+      </ul>
+    </Box>
+  );
+}
+
+function WatchedBox() {
+  const [watched, setWatched] = useState(tempWatchedData);
+  return (
+    <Box>
+      <>
+        <Summary watched={watched} />
         <ul className='list'>
-          {movies?.map((movie) => (
-            <Movie movie={movie}>
-              <span>🗓</span>
-              <span>{movie.Year}</span>
+          {watched.map((movie) => (
+            <Movie
+              movie={movie}
+              key={movie.imdbID}
+            >
+              <p>
+                <span>⭐️</span>
+                <span>{movie.imdbRating}</span>
+              </p>
+              <p>
+                <span>🌟</span>
+                <span>{movie.userRating}</span>
+              </p>
+              <p>
+                <span>⏳</span>
+                <span>{movie.runtime} min</span>
+              </p>
             </Movie>
           ))}
         </ul>
-      </Box>
-
-      <Box>
-        <>
-          <Summary watched={watched} />
-          <ul className='list'>
-            {watched.map((movie) => (
-              <Movie movie={movie}>
-                <p>
-                  <span>⭐️</span>
-                  <span>{movie.imdbRating}</span>
-                </p>
-                <p>
-                  <span>🌟</span>
-                  <span>{movie.userRating}</span>
-                </p>
-                <p>
-                  <span>⏳</span>
-                  <span>{movie.runtime} min</span>
-                </p>
-              </Movie>
-            ))}
-          </ul>
-        </>
-      </Box>
-    </main>
+      </>
+    </Box>
   );
 }
 
@@ -163,15 +174,13 @@ function Box({ children }) {
 
 function Movie({ movie, children }) {
   return (
-    <li key={movie.imdbID}>
+    <li>
       <img
         src={movie.Poster}
         alt={`${movie.Title} poster`}
       />
       <h3>{movie.Title}</h3>
-      <div>
-        <p>{children}</p>
-      </div>
+      <div className='description'>{children}</div>
     </li>
   );
 }

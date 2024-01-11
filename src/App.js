@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const tempMovieData = [
   {
@@ -50,9 +50,28 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = '7fa4e59e';
+
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const query = 'zootopia';
+
+  useEffect(function () {
+    async function fetchMovies() {
+      const res = await fetch(
+        `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+      );
+      const data = await res.json();
+      setMovies(data.Search);
+    }
+
+    fetchMovies();
+  }, []); //fetch data -> on mount (when the app first loads)
+
+  // we use useEffect hook to register the effect, so called "effect" is the
+  // fetch function (contains the side effect that we want to register
+  // (register -> load the data after app has been painted onto the screen))
 
   return (
     <>
@@ -87,7 +106,6 @@ function Nav({ children }) {
 function Logo() {
   return (
     <div className='logo'>
-      <Logo />
       <span role='img'>🍿</span>
       <h1>usePopcorn</h1>
     </div>
@@ -180,10 +198,19 @@ function WatchedMovieList({ movies }) {
 function Movie({ movie, children }) {
   return (
     <li>
-      <img
-        src={movie.Poster}
-        alt={`${movie.Title} poster`}
-      />
+      {movie.Poster != 'N/A' ? (
+        <img
+          src={movie.Poster}
+          alt={`${movie.Title} poster`}
+        />
+      ) : (
+        <img
+          src={
+            'https://st.depositphotos.com/2934765/53192/v/450/depositphotos_531920820-stock-illustration-photo-available-vector-icon-default.jpg'
+          }
+          alt={`${movie.Title} poster`}
+        />
+      )}
       <h3>{movie.Title}</h3>
       <div className='description'>{children}</div>
     </li>

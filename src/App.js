@@ -53,38 +53,48 @@ const average = (arr) =>
 const KEY = '7fa4e59e';
 
 export default function App() {
+  const [query, setQuery] = useState('zootopia');
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const query = 'ffff';
 
-  useEffect(function () {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-        );
+  useEffect(
+    function () {
+      async function fetchMovies() {
+        try {
+          setError('');
+          setIsLoading(true);
+          const res = await fetch(
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+          );
 
-        if (!res.ok)
-          throw new Error('Something went wrong with fetching movies');
+          if (!res.ok)
+            throw new Error('Something went wrong with fetching movies');
 
-        const data = await res.json();
+          const data = await res.json();
 
-        if (data.Response === 'False') throw new Error('Movie not found');
+          if (data.Response === 'False') throw new Error('Movie not found');
 
-        setMovies(data.Search);
-      } catch (err) {
-        console.error(err.message);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+          setMovies(data.Search);
+        } catch (err) {
+          console.error(err.message);
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
 
-    fetchMovies();
-  }, []); //fetch data -> on mount (when the app first loads)
+      if (query.length < 2) {
+        setMovies([]);
+        setError('');
+        return;
+      }
+
+      fetchMovies();
+    },
+    [query]
+  ); //fetch data -> on mount (when the app first loads)
 
   // we use useEffect hook to register the effect, so called "effect" is the
   // fetch function (contains the side effect that we want to register
@@ -93,7 +103,10 @@ export default function App() {
   return (
     <>
       <Nav>
-        <Search />
+        <Search
+          query={query}
+          setQuery={setQuery}
+        />
         <SearchResults movies={movies} />
       </Nav>
 
@@ -143,8 +156,7 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState('');
+function Search({ query, setQuery }) {
   return (
     <input
       className='search'
